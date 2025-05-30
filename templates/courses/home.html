@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}EEAR Preparatório - Sua aprovação na Aeronáutica{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    Prepare-se para a <br>
+                    <span class="text-warning">EEAR 2025</span>
+                </h1>
+                <p class="lead mb-4">
+                    O curso online mais completo para sua aprovação na Escola de Especialistas da Aeronáutica. 
+                    Videoaulas, simulados e materiais exclusivos.
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'accounts:signup' %}" class="btn btn-warning btn-lg">
+                            Começar Agora
+                        </a>
+                        <a href="{% url 'courses:courses_list' %}" class="btn btn-outline-light btn-lg">
+                            Ver Cursos
+                        </a>
+                    {% else %}
+                        <a href="{% url 'courses:dashboard' %}" class="btn btn-warning btn-lg">
+                            Ir para Dashboard
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="hero-image">
+                    <i class="fas fa-fighter-jet fa-10x text-warning opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="fw-bold">Por que escolher nosso curso?</h2>
+                <p class="text-muted">Tudo que você precisa para sua aprovação</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="fas fa-video fa-3x text-primary"></i>
+                        </div>
+                        <h5>Videoaulas HD</h5>
+                        <p class="text-muted">
+                            Aulas gravadas em alta definição com professores especialistas
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="fas fa-file-pdf fa-3x text-primary"></i>
+                        </div>
+                        <h5>Material Completo</h5>
+                        <p class="text-muted">
+                            PDFs, exercícios e resumos de todas as matérias
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="fas fa-headset fa-3x text-primary"></i>
+                        </div>
+                        <h5>Suporte Total</h5>
+                        <p class="text-muted">
+                            Tire suas dúvidas com nossos professores
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Subjects Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="fw-bold">Matérias do Concurso</h2>
+                <p class="text-muted">Todas as disciplinas que você precisa dominar</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for subject in subjects %}
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        {% if subject.icon %}
+                            <i class="{{ subject.icon }} fa-2x text-primary mb-3"></i>
+                        {% else %}
+                            <i class="fas fa-book fa-2x text-primary mb-3"></i>
+                        {% endif %}
+                        <h6 class="card-title">{{ subject.name }}</h6>
+                        <p class="card-text text-muted small">{{ subject.description|truncatewords:15 }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Courses -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="fw-bold">Cursos em Destaque</h2>
+                <p class="text-muted">Nossos cursos mais procurados</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for course in featured_courses %}
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    {% if course.thumbnail %}
+                        <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.title }}">
+                    {% else %}
+                        <div class="card-img-top bg-primary d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-book fa-3x text-white"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-primary">{{ course.subject.name }}</span>
+                            {% if course.is_premium %}
+                                <span class="badge bg-warning">Premium</span>
+                            {% endif %}
+                        </div>
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        <p class="card-text text-muted">{{ course.description|truncatewords:20 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ course.duration_hours }}h
+                            </small>
+                            <a href="{% url 'courses:course_detail' course.id %}" 
+                               class="btn btn-primary btn-sm">
+                                Ver Curso
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">Cursos em breve!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-3">Pronto para começar?</h2>
+        <p class="lead mb-4">Junte-se a milhares de aprovados na EEAR</p>
+        {% if not user.is_authenticated %}
+            <a href="{% url 'accounts:signup' %}" class="btn btn-warning btn-lg">
+                Criar Conta Grátis
+            </a>
+        {% else %}
+            <a href="{% url 'accounts:enrollment' %}" class="btn btn-warning btn-lg">
+                Escolher Plano
+            </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

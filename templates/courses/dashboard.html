@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - EEAR Prep{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="fw-bold">Olá, {{ user.first_name|default:user.username }}!</h1>
+            <p class="text-muted">Bem-vindo de volta ao seu painel de estudos</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card stats-card border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-book fa-2x mb-3"></i>
+                    <h3 class="fw-bold">{{ total_courses }}</h3>
+                    <p class="mb-0">Cursos Disponíveis</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-success text-white border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-3"></i>
+                    <h3 class="fw-bold">{{ completed_lessons }}</h3>
+                    <p class="mb-0">Aulas Concluídas</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-warning text-white border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-3"></i>
+                    <h3 class="fw-bold">{{ in_progress_courses.count }}</h3>
+                    <p class="mb-0">Cursos em Andamento</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-info text-white border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-star fa-2x mb-3"></i>
+                    <h3 class="fw-bold">
+                        {% if user.is_premium %}Premium{% else %}Básico{% endif %}
+                    </h3>
+                    <p class="mb-0">Seu Plano</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Cursos em Progresso -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Cursos em Progresso</h5>
+                    <a href="{% url 'courses:courses_list' %}" class="btn btn-sm btn-outline-primary">
+                        Ver Todos
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if in_progress_courses %}
+                        {% for course in in_progress_courses %}
+                        <div class="d-flex align-items-center mb-3 p-3 border rounded">
+                            {% if course.thumbnail %}
+                                <img src="{{ course.thumbnail.url }}" 
+                                     class="rounded me-3" width="60" height="60">
+                            {% else %}
+                                <div class="bg-primary rounded me-3 d-flex align-items-center justify-content-center" 
+                                     style="width: 60px; height: 60px;">
+                                    <i class="fas fa-book text-white"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ course.title }}</h6>
+                                <p class="text-muted mb-2 small">{{ course.subject.name }}</p>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar" style="width: 45%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="ms-3">
+                                <a href="{% url 'courses:course_detail' course.id %}" 
+                                   class="btn btn-sm btn-primary">
+                                    Continuar
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                            <h6>Nenhum curso iniciado</h6>
+                            <p class="text-muted">Comece seus estudos escolhendo um curso</p>
+                            <a href="{% url 'courses:courses_list' %}" class="btn btn-primary">
+                                Explorar Cursos
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Próximas Aulas -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Próximas Aulas</h5>
+                </div>
+                <div class="card-body">
+                    {% if next_lessons %}
+                        {% for lesson in next_lessons %}
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-3">
+                                {% if lesson.lesson_type == 'video' %}
+                                    <i class="fas fa-play-circle fa-2x text-primary"></i>
+                                {% elif lesson.lesson_type == 'quiz' %}
+                                    <i class="fas fa-question-circle fa-2x text-warning"></i>
+                                {% else %}
+                                    <i class="fas fa-file-text fa-2x text-info"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ lesson.title|truncatechars:30 }}</h6>
+                                <small class="text-muted">{{ lesson.course.title }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                            <p class="text-muted mb-0">Todas em dia!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
