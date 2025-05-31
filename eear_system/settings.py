@@ -1,12 +1,11 @@
 ﻿import os
 from pathlib import Path
-from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-production')
-DEBUG = config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.herokuapp.com']
+SECRET_KEY = 'django-insecure-change-me-in-production'
+DEBUG = True
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -15,11 +14,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # Third party apps
-    'crispy_forms',
-    'crispy_bootstrap5',
-    'widget_tweaks',
     
     # Local apps
     'accounts',
@@ -30,7 +24,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -98,9 +91,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Custom user model
 AUTH_USER_MODEL = 'accounts.User'
 
-# Crispy Forms
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-CRISPY_TEMPLATE_PACK = "bootstrap5"
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Login URLs
 LOGIN_URL = 'accounts:login'
@@ -111,3 +106,27 @@ LOGOUT_REDIRECT_URL = 'home'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@eearprep.com'
 CONTACT_EMAIL = 'contato@eearprep.com'
+
+# Login URLs
+# Adicionar essas configurações ao settings.py
+
+# URLs de autenticação
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'courses:dashboard'
+LOGOUT_REDIRECT_URL = 'home'
+
+# Configurações de sessão para logout mais efetivo
+SESSION_COOKIE_AGE = 1209600  # 2 semanas
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Configurações de logout
+LOGOUT_ON_GET = True  # Permitir logout via GET
+
+# Configurações de segurança
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+
+if not DEBUG:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True

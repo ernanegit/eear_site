@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% block title %}EEAR Preparatório{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
@@ -25,60 +26,101 @@
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
-                    data-bs-target="#navbarNav">
+                    data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" 
+                    aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Início</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
+                           href="{% url 'home' %}">Início</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'courses:courses_list' %}">Cursos</a>
+                        <a class="nav-link {% if 'courses' in request.resolver_match.namespace %}active{% endif %}" 
+                           href="{% url 'courses:courses_list' %}">Cursos</a>
                     </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'materials' in request.resolver_match.namespace %}active{% endif %}" 
+                               href="{% url 'materials:materials_list' %}">Materiais</a>
+                        </li>
+                    {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'materials:materials_list' %}">Materiais</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'support:faq' %}">FAQ</a>
+                        <a class="nav-link {% if 'support' in request.resolver_match.namespace %}active{% endif %}" 
+                           href="{% url 'support:faq' %}">FAQ</a>
                     </li>
                 </ul>
                 
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" 
-                               data-bs-toggle="dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" 
+                               data-bs-toggle="dropdown" aria-expanded="false">
                                 {% if user.profile_picture %}
                                     <img src="{{ user.profile_picture.url }}" 
-                                         class="rounded-circle me-1" width="25" height="25">
+                                         class="rounded-circle me-2" width="32" height="32"
+                                         alt="Foto de perfil">
+                                {% else %}
+                                    <i class="fas fa-user-circle fa-lg me-2"></i>
                                 {% endif %}
-                                {{ user.first_name|default:user.username }}
+                                <span class="d-none d-md-inline">{{ user.first_name|default:user.username }}</span>
+                                {% if user.is_premium %}
+                                    <i class="fas fa-crown text-warning ms-1" title="Usuário Premium"></i>
+                                {% endif %}
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'courses:dashboard' %}">
-                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                                </a></li>
-                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
-                                    <i class="fas fa-user me-2"></i>Perfil
-                                </a></li>
-                                <li><a class="dropdown-item" href="{% url 'accounts:enrollment' %}">
-                                    <i class="fas fa-credit-card me-2"></i>Assinatura
-                                </a></li>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'courses:dashboard' %}">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                        <i class="fas fa-user me-2"></i>Meu Perfil
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:enrollment' %}">
+                                        <i class="fas fa-credit-card me-2"></i>
+                                        {% if user.is_premium %}Minha Assinatura{% else %}Assinar Premium{% endif %}
+                                    </a>
+                                </li>
+                                {% if user.is_authenticated %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'support:tickets' %}">
+                                            <i class="fas fa-ticket-alt me-2"></i>Meus Tickets
+                                        </a>
+                                    </li>
+                                {% endif %}
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Sair
-                                </a></li>
+                                {% if user.is_staff %}
+                                    <li>
+                                        <a class="dropdown-item" href="/admin/" target="_blank">
+                                            <i class="fas fa-cog me-2"></i>Administração
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                {% endif %}
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Sair
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'accounts:login' %}">Entrar</a>
+                            <a class="nav-link" href="{% url 'accounts:login' %}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Entrar
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link btn btn-outline-light ms-2" 
-                               href="{% url 'accounts:signup' %}">Cadastrar</a>
+                            <a class="nav-link btn btn-outline-light ms-2 px-3" 
+                               href="{% url 'accounts:signup' %}">
+                                <i class="fas fa-user-plus me-1"></i>Cadastrar
+                            </a>
                         </li>
                     {% endif %}
                 </ul>
@@ -90,9 +132,10 @@
     {% if messages %}
         <div class="container mt-3">
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endfor %}
         </div>
@@ -107,30 +150,72 @@
     <footer class="bg-dark text-light py-4 mt-5">
         <div class="container">
             <div class="row">
-                <div class="col-md-6">
-                    <h5>EEAR Preparatório</h5>
-                    <p>Prepare-se para a Escola de Especialistas da Aeronáutica com o melhor conteúdo.</p>
+                <div class="col-md-4">
+                    <h5>
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        EEAR Preparatório
+                    </h5>
+                    <p>Prepare-se para a Escola de Especialistas da Aeronáutica com o melhor conteúdo online.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-light" title="Facebook">
+                            <i class="fab fa-facebook-f fa-lg"></i>
+                        </a>
+                        <a href="#" class="text-light" title="Instagram">
+                            <i class="fab fa-instagram fa-lg"></i>
+                        </a>
+                        <a href="#" class="text-light" title="YouTube">
+                            <i class="fab fa-youtube fa-lg"></i>
+                        </a>
+                        <a href="#" class="text-light" title="Telegram">
+                            <i class="fab fa-telegram fa-lg"></i>
+                        </a>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <h6>Links Úteis</h6>
+                <div class="col-md-2">
+                    <h6>Cursos</h6>
                     <ul class="list-unstyled">
-                        <li><a href="#" class="text-light">Sobre Nós</a></li>
-                        <li><a href="{% url 'support:contact' %}" class="text-light">Contato</a></li>
-                        <li><a href="{% url 'support:faq' %}" class="text-light">FAQ</a></li>
+                        <li><a href="{% url 'courses:courses_list' %}" class="text-light text-decoration-none">Todos os Cursos</a></li>
+                        <li><a href="{% url 'courses:courses_list' %}?level=basic" class="text-light text-decoration-none">Básico</a></li>
+                        <li><a href="{% url 'courses:courses_list' %}?level=intermediate" class="text-light text-decoration-none">Intermediário</a></li>
+                        <li><a href="{% url 'courses:courses_list' %}?level=advanced" class="text-light text-decoration-none">Avançado</a></li>
                     </ul>
                 </div>
                 <div class="col-md-3">
-                    <h6>Redes Sociais</h6>
-                    <div class="d-flex gap-3">
-                        <a href="#" class="text-light"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="text-light"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-light"><i class="fab fa-youtube"></i></a>
-                    </div>
+                    <h6>Suporte</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'support:faq' %}" class="text-light text-decoration-none">FAQ</a></li>
+                        <li><a href="{% url 'support:contact' %}" class="text-light text-decoration-none">Contato</a></li>
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'support:create_ticket' %}" class="text-light text-decoration-none">Abrir Ticket</a></li>
+                        {% endif %}
+                        <li><a href="#" class="text-light text-decoration-none">Política de Privacidade</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>Conta</h6>
+                    <ul class="list-unstyled">
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'courses:dashboard' %}" class="text-light text-decoration-none">Meu Dashboard</a></li>
+                            <li><a href="{% url 'accounts:profile' %}" class="text-light text-decoration-none">Meu Perfil</a></li>
+                            <li><a href="{% url 'accounts:enrollment' %}" class="text-light text-decoration-none">Assinatura</a></li>
+                        {% else %}
+                            <li><a href="{% url 'accounts:login' %}" class="text-light text-decoration-none">Fazer Login</a></li>
+                            <li><a href="{% url 'accounts:signup' %}" class="text-light text-decoration-none">Criar Conta</a></li>
+                        {% endif %}
+                        <li><a href="#" class="text-light text-decoration-none">Termos de Uso</a></li>
+                    </ul>
                 </div>
             </div>
-            <hr>
-            <div class="text-center">
-                <p>&copy; 2025 EEAR Preparatório. Todos os direitos reservados.</p>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; {{ "now"|date:"Y" }} EEAR Preparatório. Todos os direitos reservados.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="text-muted">
+                        Desenvolvido com <i class="fas fa-heart text-danger"></i> para sua aprovação
+                    </small>
+                </div>
             </div>
         </div>
     </footer>
@@ -141,5 +226,10 @@
     <script src="{% static 'js/main.js' %}"></script>
     
     {% block extra_js %}{% endblock %}
+
+    <!-- Analytics / Tracking Code -->
+    {% if not debug %}
+    <!-- Google Analytics ou outro serviço de analytics aqui -->
+    {% endif %}
 </body>
 </html>

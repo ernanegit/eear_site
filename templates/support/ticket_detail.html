@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticket #{{ ticket.id }} - EEAR Prep{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header do Ticket -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'support:tickets' %}">Meus Tickets</a></li>
+                    <li class="breadcrumb-item active">Ticket #{{ ticket.id }}</li>
+                </ol>
+            </nav>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0">
+                            <i class="fas fa-ticket-alt me-2"></i>
+                            Ticket #{{ ticket.id }}
+                        </h4>
+                        <h6 class="text-muted mt-1">{{ ticket.subject }}</h6>
+                    </div>
+                    <div>
+                        {% if ticket.status == 'open' %}
+                            <span class="badge bg-danger fs-6">
+                                <i class="fas fa-circle me-1"></i>Aberto
+                            </span>
+                        {% elif ticket.status == 'in_progress' %}
+                            <span class="badge bg-warning fs-6">
+                                <i class="fas fa-clock me-1"></i>Em Andamento
+                            </span>
+                        {% elif ticket.status == 'resolved' %}
+                            <span class="badge bg-success fs-6">
+                                <i class="fas fa-check-circle me-1"></i>Resolvido
+                            </span>
+                        {% elif ticket.status == 'closed' %}
+                            <span class="badge bg-secondary fs-6">
+                                <i class="fas fa-times-circle me-1"></i>Fechado
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6><i class="fas fa-user me-2"></i>Descrição do Problema:</h6>
+                            <p class="text-muted">{{ ticket.description|linebreaks }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-info-circle me-2"></i>Informações:</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Criado:</strong> {{ ticket.created_at|date:"d/m/Y H:i" }}</li>
+                                <li><strong>Atualizado:</strong> {{ ticket.updated_at|date:"d/m/Y H:i" }}</li>
+                                <li><strong>Prioridade:</strong> 
+                                    {% if ticket.priority == 'low' %}
+                                        <span class="badge bg-success">Baixa</span>
+                                    {% elif ticket.priority == 'medium' %}
+                                        <span class="badge bg-warning">Média</span>
+                                    {% elif ticket.priority == 'high' %}
+                                        <span class="badge bg-danger">Alta</span>
+                                    {% elif ticket.priority == 'urgent' %}
+                                        <span class="badge bg-danger">Urgente</span>
+                                    {% endif %}
+                                </li>
+                                {% if ticket.assigned_to %}
+                                    <li><strong>Atribuído a:</strong> {{ ticket.assigned_to.get_full_name|default:ticket.assigned_to.username }}</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conversação -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>
+                        Conversação ({{ replies.count }} resposta{{ replies.count|pluralize }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if replies %}
+                        {% for reply in replies %}
+                        <div class="d-flex mb-4 {% if reply.is_staff_reply %}justify-content-start{% else %}justify-content-end{% endif %}">
+                            <div class="{% if reply.is_staff_reply %}me-3{% else %}ms-3{% endif %}">
+                                {% if reply.is_staff_reply %}
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-headset"></i>
+                                    </div>
+                                {% else %}
+                                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1" style="max-width: 70%;">
+                                <div class="card {% if reply.is_staff_reply %}border-primary{% else %}border-secondary{% endif %}">
+                                    <div class="card-header py-2 {% if reply.is_staff_reply %}bg-primary text-white{% else %}bg-secondary text-white{% endif %}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="fw-bold">
+                                                {% if reply.is_staff_reply %}
+                                                    <i class="fas fa-headset me-1"></i>Suporte EEAR
+                                                {% else %}
+                                                    <i class="fas fa-user me-1"></i>{{ reply.user.get_full_name|default:reply.user.username }}
+                                                {% endif %}
+                                            </small>
+                                            <small>{{ reply.created_at|date:"d/m/Y H:i" }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="card-body py-3">
+                                        <p class="mb-0">{{ reply.message|linebreaks }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                            <h6>Nenhuma resposta ainda</h6>
+                            <p class="text-muted">Nossa equipe responderá em breve.</p>
+                        </div>
+                    {% endif %}
+
+                    <!-- Formulário de Resposta -->
+                    {% if ticket.status != 'closed' %}
+                    <div class="border-top pt-4 mt-4">
+                        <h6><i class="fas fa-reply me-2"></i>Adicionar Resposta:</h6>
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <textarea name="message" class="form-control" rows="4" 
+                                          placeholder="Digite sua resposta..." required></textarea>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'support:tickets' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Voltar aos Tickets
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Enviar Resposta
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Este ticket foi fechado e não aceita mais respostas.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 12px;
+}
+
+.badge.fs-6 {
+    font-size: 0.9rem !important;
+    padding: 0.5rem 1rem;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.15);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #004499 0%, #0066cc 100%);
+    transform: translateY(-1px);
+}
+
+.card-header.bg-primary {
+    background-color: #0066cc !important;
+}
+
+.card-header.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+.border-primary {
+    border-color: #0066cc !important;
+}
+</style>
+{% endblock %}

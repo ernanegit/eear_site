@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Assinatura - EEAR Prep{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-5">
+                <h1 class="fw-bold">
+                    <i class="fas fa-crown me-2 text-warning"></i>
+                    Escolha seu Plano
+                </h1>
+                <p class="lead text-muted">Selecione o plano que melhor se adequa às suas necessidades</p>
+            </div>
+            
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Corrija os erros abaixo:</h6>
+                    <ul class="mb-0">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li><strong>{{ field }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Planos -->
+                <div class="row g-4 mb-5">
+                    <!-- Plano Básico -->
+                    <div class="col-md-4">
+                        <div class="card h-100 border-2 border-secondary position-relative">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-user fa-3x text-secondary mb-3"></i>
+                                <h4 class="fw-bold">Plano Básico</h4>
+                                <h2 class="text-success fw-bold mb-3">GRÁTIS</h2>
+                                
+                                <ul class="list-unstyled text-start">
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Acesso a cursos básicos</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Materiais gratuitos</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Suporte por email</li>
+                                    <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Cursos premium</li>
+                                    <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Downloads ilimitados</li>
+                                    <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Suporte prioritário</li>
+                                </ul>
+                                
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="radio" name="plan" value="basic" id="plan_basic" 
+                                           {% if not form.plan.value or form.plan.value == 'basic' %}checked{% endif %}>
+                                    <label class="form-check-label fw-bold" for="plan_basic">
+                                        Selecionar Básico
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Plano Premium -->
+                    <div class="col-md-4">
+                        <div class="card h-100 border-2 border-warning position-relative">
+                            <div class="badge bg-warning position-absolute top-0 start-50 translate-middle px-3 py-2">
+                                <i class="fas fa-star me-1"></i>POPULAR
+                            </div>
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-crown fa-3x text-warning mb-3"></i>
+                                <h4 class="fw-bold">Plano Premium</h4>
+                                <h2 class="text-warning fw-bold mb-1">R$ 49,90</h2>
+                                <small class="text-muted">por mês</small>
+                                
+                                <ul class="list-unstyled text-start mt-4">
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Todos os cursos disponíveis</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Materiais exclusivos</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Downloads ilimitados</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Suporte prioritário</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Certificados de conclusão</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Atualizações gratuitas</li>
+                                </ul>
+                                
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="radio" name="plan" value="premium" id="plan_premium"
+                                           {% if form.plan.value == 'premium' %}checked{% endif %}>
+                                    <label class="form-check-label fw-bold" for="plan_premium">
+                                        Selecionar Premium
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Plano Anual -->
+                    <div class="col-md-4">
+                        <div class="card h-100 border-2 border-success position-relative">
+                            <div class="badge bg-success position-absolute top-0 start-50 translate-middle px-3 py-2">
+                                <i class="fas fa-percentage me-1"></i>ECONOMIA
+                            </div>
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-gem fa-3x text-success mb-3"></i>
+                                <h4 class="fw-bold">Plano Anual</h4>
+                                <h2 class="text-success fw-bold mb-1">R$ 399,90</h2>
+                                <small class="text-muted">por ano</small>
+                                <div class="alert alert-success mt-2 py-1">
+                                    <small><strong>Economize R$ 199!</strong></small>
+                                </div>
+                                
+                                <ul class="list-unstyled text-start">
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Todos os benefícios Premium</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>4 meses grátis</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Acesso prioritário a novos cursos</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Mentoria personalizada</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Grupo VIP no Telegram</li>
+                                    <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Garantia de 30 dias</li>
+                                </ul>
+                                
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="radio" name="plan" value="annual" id="plan_annual"
+                                           {% if form.plan.value == 'annual' %}checked{% endif %}>
+                                    <label class="form-check-label fw-bold" for="plan_annual">
+                                        Selecionar Anual
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Método de Pagamento -->
+                <div id="payment-section" class="card border-0 shadow-sm mb-4" style="display: none;">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-credit-card me-2"></i>
+                            Método de Pagamento
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="{{ form.payment_method.id_for_label }}" class="form-label">
+                                    Escolha o método de pagamento:
+                                </label>
+                                <select name="payment_method" class="form-select">
+                                    <option value="">Selecione o método de pagamento</option>
+                                    <option value="credit_card">💳 Cartão de Crédito</option>
+                                    <option value="debit_card">💳 Cartão de Débito</option>
+                                    <option value="pix">📱 PIX (Desconto de 5%)</option>
+                                    <option value="boleto">🏦 Boleto Bancário</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert alert-info mt-4 mt-md-0">
+                                    <i class="fas fa-shield-alt me-2"></i>
+                                    <strong>Pagamento Seguro</strong><br>
+                                    <small>Seus dados estão protegidos com criptografia SSL</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botão de Envio -->
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-check me-2"></i>Confirmar Plano
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const planRadios = document.querySelectorAll('input[name="plan"]');
+    const paymentSection = document.getElementById('payment-section');
+    
+    function togglePaymentSection() {
+        const selectedPlan = document.querySelector('input[name="plan"]:checked').value;
+        if (selectedPlan === 'premium' || selectedPlan === 'annual') {
+            paymentSection.style.display = 'block';
+        } else {
+            paymentSection.style.display = 'none';
+        }
+    }
+    
+    planRadios.forEach(radio => {
+        radio.addEventListener('change', togglePaymentSection);
+    });
+    
+    // Verificar na inicialização
+    togglePaymentSection();
+});
+</script>
+
+<style>
+.card {
+    border-radius: 12px;
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.form-check-input:checked {
+    background-color: #0066cc;
+    border-color: #0066cc;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 15px 30px;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #004499 0%, #0066cc 100%);
+    transform: translateY(-2px);
+}
+
+.badge {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.border-warning {
+    border-color: #ffc107 !important;
+}
+
+.border-success {
+    border-color: #28a745 !important;
+}
+
+.border-secondary {
+    border-color: #6c757d !important;
+}
+</style>
+{% endblock %}

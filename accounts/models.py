@@ -15,7 +15,13 @@ class User(AbstractUser):
     updated_at = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']  # Corrigido: removido 'email'
+
+    def save(self, *args, **kwargs):
+        # Garantir que email seja único e em lowercase
+        if self.email:
+            self.email = self.email.lower()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.email
@@ -60,4 +66,3 @@ class Enrollment(models.Model):
     
     def __str__(self):
         return f"{self.user.email} - {self.get_plan_display()}"
-# Create your models here.

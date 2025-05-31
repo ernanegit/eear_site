@@ -38,51 +38,44 @@
     <div class="row">
         <div class="col-lg-10 mx-auto">
             {% if faq_categories %}
-                <div class="accordion" id="faqAccordion">
-                    {% for category_key, category_faqs in faq_categories.items %}
-                        {% for choice in category_choices %}
-                            {% if choice.0 == category_key %}
-                                <div class="card mb-3 border-0 shadow-sm">
-                                    <div class="card-header bg-light">
-                                        <h4 class="mb-0">
-                                            <i class="fas fa-folder-open text-primary me-2"></i>
-                                            {{ choice.1 }}
-                                        </h4>
-                                    </div>
-                                    
-                                    <div class="card-body p-0">
-                                        {% for faq in category_faqs %}
-                                            <div class="border-bottom">
-                                                <div class="p-3">
-                                                    <h6 class="mb-0">
-                                                        <button class="btn btn-link text-start w-100 text-decoration-none fw-semibold" 
-                                                                type="button" 
-                                                                data-bs-toggle="collapse" 
-                                                                data-bs-target="#faq{{ faq.id }}" 
-                                                                aria-expanded="false" 
-                                                                aria-controls="faq{{ faq.id }}">
-                                                            <i class="fas fa-question-circle text-primary me-2"></i>
-                                                            {{ faq.question }}
-                                                            <i class="fas fa-chevron-down float-end mt-1"></i>
-                                                        </button>
-                                                    </h6>
-                                                </div>
-                                                <div id="faq{{ faq.id }}" class="collapse" data-bs-parent="#faqAccordion">
-                                                    <div class="p-3 pt-0">
-                                                        <div class="alert alert-light mb-0">
-                                                            <i class="fas fa-lightbulb text-warning me-2"></i>
-                                                            {{ faq.answer|linebreaks }}
-                                                        </div>
+                {% for category_key, category_faqs in faq_categories.items %}
+                    {% for choice in category_choices %}
+                        {% if choice.0 == category_key %}
+                            <div class="card mb-4 border-0 shadow-sm">
+                                <div class="card-header bg-light">
+                                    <h4 class="mb-0">
+                                        <i class="fas fa-folder-open text-primary me-2"></i>
+                                        {{ choice.1 }}
+                                    </h4>
+                                </div>
+                                
+                                <div class="card-body p-0">
+                                    {% for faq in category_faqs %}
+                                        <div class="faq-item border-bottom">
+                                            <div class="faq-question" data-faq-id="{{ faq.id }}">
+                                                <div class="p-3 d-flex justify-content-between align-items-center cursor-pointer">
+                                                    <div class="flex-grow-1">
+                                                        <i class="fas fa-question-circle text-primary me-2"></i>
+                                                        <strong>{{ faq.question }}</strong>
+                                                    </div>
+                                                    <div class="faq-icon">
+                                                        <i class="fas fa-chevron-down text-primary"></i>
                                                     </div>
                                                 </div>
                                             </div>
-                                        {% endfor %}
-                                    </div>
+                                            <div class="faq-answer" id="answer-{{ faq.id }}" style="display: none;">
+                                                <div class="p-3 bg-light border-start border-primary border-4">
+                                                    <i class="fas fa-lightbulb text-warning me-2"></i>
+                                                    <div class="d-inline">{{ faq.answer|linebreaks }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
                                 </div>
-                            {% endif %}
-                        {% endfor %}
+                            </div>
+                        {% endif %}
                     {% endfor %}
-                </div>
+                {% endfor %}
             {% else %}
                 <!-- Empty State -->
                 <div class="text-center py-5">
@@ -165,36 +158,178 @@
     </div>
 </div>
 
+<style>
+.card {
+    border-radius: 12px;
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.faq-item {
+    transition: all 0.3s ease;
+}
+
+.faq-question {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.faq-question:hover {
+    background-color: #f8f9fa;
+}
+
+.faq-question.active {
+    background-color: #e3f2fd;
+}
+
+.faq-answer {
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out;
+    max-height: 0;
+}
+
+.faq-answer.show {
+    max-height: 1000px;
+    display: block !important;
+}
+
+.faq-icon {
+    transition: transform 0.3s ease;
+}
+
+.faq-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #004499 0%, #0066cc 100%);
+    transform: translateY(-1px);
+}
+
+.text-primary {
+    color: #0066cc !important;
+}
+
+/* Smooth animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.faq-answer.show .p-3 {
+    animation: slideDown 0.3s ease-out;
+}
+</style>
+
 {% block extra_js %}
 <script>
-// Auto-expand FAQ if URL has hash
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('FAQ JavaScript carregado');
+    
+    // Selecionar todas as perguntas FAQ
+    const faqQuestions = document.querySelectorAll('.faq-question');
+    
+    faqQuestions.forEach(function(question) {
+        question.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const faqId = this.getAttribute('data-faq-id');
+            const answer = document.getElementById('answer-' + faqId);
+            const icon = this.querySelector('.faq-icon i');
+            
+            console.log('Clicou na FAQ ID:', faqId);
+            
+            if (!answer) {
+                console.error('Resposta não encontrada para FAQ ID:', faqId);
+                return;
+            }
+            
+            // Toggle da resposta atual
+            if (answer.classList.contains('show')) {
+                // Fechar
+                console.log('Fechando FAQ:', faqId);
+                answer.classList.remove('show');
+                answer.style.display = 'none';
+                this.classList.remove('active');
+                icon.classList.remove('rotated');
+            } else {
+                // Fechar todas as outras respostas na mesma categoria (opcional)
+                const currentCard = this.closest('.card');
+                const otherAnswers = currentCard.querySelectorAll('.faq-answer.show');
+                const otherQuestions = currentCard.querySelectorAll('.faq-question.active');
+                const otherIcons = currentCard.querySelectorAll('.faq-icon.rotated i');
+                
+                otherAnswers.forEach(function(otherAnswer) {
+                    otherAnswer.classList.remove('show');
+                    otherAnswer.style.display = 'none';
+                });
+                
+                otherQuestions.forEach(function(otherQuestion) {
+                    otherQuestion.classList.remove('active');
+                });
+                
+                otherIcons.forEach(function(otherIcon) {
+                    otherIcon.classList.remove('rotated');
+                });
+                
+                // Abrir a resposta atual
+                console.log('Abrindo FAQ:', faqId);
+                answer.style.display = 'block';
+                setTimeout(() => {
+                    answer.classList.add('show');
+                }, 10);
+                this.classList.add('active');
+                icon.classList.add('rotated');
+                
+                // Scroll suave para a pergunta
+                setTimeout(() => {
+                    this.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 200);
+            }
+        });
+    });
+    
+    // Auto-expand FAQ se URL tem hash
     if (window.location.hash) {
-        const target = document.querySelector(window.location.hash);
-        if (target) {
-            const collapse = new bootstrap.Collapse(target, {
-                show: true
-            });
+        const hashId = window.location.hash.substr(1);
+        const targetAnswer = document.getElementById(hashId);
+        if (targetAnswer && targetAnswer.classList.contains('faq-answer')) {
+            const targetQuestion = document.querySelector(`[data-faq-id="${hashId.replace('answer-', '')}"]`);
+            if (targetQuestion) {
+                setTimeout(() => {
+                    targetQuestion.click();
+                }, 500);
+            }
         }
     }
-});
-
-// Search functionality for FAQ
-function searchFAQ() {
-    const searchTerm = document.getElementById('faqSearch').value.toLowerCase();
-    const faqItems = document.querySelectorAll('.accordion-item');
     
-    faqItems.forEach(item => {
-        const question = item.querySelector('.accordion-button').textContent.toLowerCase();
-        const answer = item.querySelector('.accordion-body').textContent.toLowerCase();
-        
-        if (question.includes(searchTerm) || answer.includes(searchTerm)) {
-            item.style.display = '';
-        } else {
-            item.style.display = 'none';
-        }
-    });
-}
+    console.log('FAQ JavaScript inicializado com', faqQuestions.length, 'perguntas');
+});
 </script>
 {% endblock %}
 {% endblock %}

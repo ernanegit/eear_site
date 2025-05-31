@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Logout Realizado - EEAR Prep{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-sign-out-alt fa-4x text-success mb-3"></i>
+                        <h2 class="fw-bold text-success">Logout Realizado!</h2>
+                        {% if username %}
+                            <p class="text-muted">Até logo, <strong>{{ username }}</strong>!</p>
+                        {% endif %}
+                        <p class="text-muted">Você foi desconectado com sucesso do sistema.</p>
+                    </div>
+                    
+                    <div class="d-grid gap-3">
+                        <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            Fazer Login Novamente
+                        </a>
+                        
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home me-2"></i>
+                            Voltar ao Início
+                        </a>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-top">
+                        <p class="small text-muted mb-0">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Por segurança, feche completamente o navegador se estiver em um computador público.
+                        </p>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <p class="small text-info">
+                            <i class="fas fa-clock me-1"></i>
+                            Redirecionamento automático em <span id="countdown">5</span> segundos...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 15px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #004499 0%, #0066cc 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 102, 204, 0.3);
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+</style>
+
+<script>
+// Verificar se realmente está deslogado
+fetch('/accounts/profile/', {
+    method: 'GET',
+    credentials: 'same-origin'
+})
+.then(response => {
+    if (response.status === 302 || response.redirected) {
+        console.log('Logout confirmado - usuário não está mais autenticado');
+    }
+})
+.catch(error => {
+    console.log('Logout confirmado');
+});
+
+// Auto-redirect para home após 5 segundos
+let countdown = 5;
+const countdownElement = document.getElementById('countdown');
+
+const timer = setInterval(function() {
+    countdown--;
+    if (countdownElement) {
+        countdownElement.textContent = countdown;
+    }
+    
+    if (countdown <= 0) {
+        clearInterval(timer);
+        window.location.href = '{% url "home" %}';
+    }
+}, 1000);
+
+// Limpar qualquer cache/storage local
+if (typeof(Storage) !== "undefined") {
+    localStorage.clear();
+    sessionStorage.clear();
+}
+</script>
+{% endblock %}

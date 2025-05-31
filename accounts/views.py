@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.generic import CreateView
@@ -62,4 +62,28 @@ def enrollment(request):
         form = EnrollmentForm(instance=enrollment)
     
     return render(request, 'accounts/enrollment.html', {'form': form})
-# Create your views here.
+
+def logout_view(request):
+    """View de logout que funciona com GET e POST"""
+    if request.user.is_authenticated:
+        username = request.user.get_full_name() or request.user.username
+        
+        # Fazer logout efetivamente
+        logout(request)
+        
+        # Limpar sessão completamente
+        if hasattr(request, 'session'):
+            request.session.flush()
+        
+        # Adicionar mensagem de sucesso
+        messages.success(request, f'Até logo, {username}! Logout realizado com sucesso.')
+        
+        # Se for GET, mostrar página de confirmação
+        if request.method == 'GET':
+            return render(request, 'accounts/logout.html', {
+                'logout_success': True,
+                'username': username
+            })
+    
+    # Sempre redirecionar para home no final
+    return redirect('home')

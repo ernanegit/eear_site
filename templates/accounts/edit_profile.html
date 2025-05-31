@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Perfil - EEAR Prep{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>
+                        Editar Perfil
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <h6><i class="fas fa-exclamation-triangle me-2"></i>Corrija os erros abaixo:</h6>
+                            <ul class="mb-0">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li><strong>{{ field }}:</strong> {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Informações Básicas -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                    <i class="fas fa-user me-1"></i>Primeiro Nome *
+                                </label>
+                                <input type="text" name="first_name" 
+                                       class="form-control{% if form.first_name.errors %} is-invalid{% endif %}" 
+                                       value="{{ form.first_name.value|default:'' }}" 
+                                       placeholder="João" required>
+                                {% if form.first_name.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.first_name.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                    <i class="fas fa-user me-1"></i>Sobrenome *
+                                </label>
+                                <input type="text" name="last_name" 
+                                       class="form-control{% if form.last_name.errors %} is-invalid{% endif %}" 
+                                       value="{{ form.last_name.value|default:'' }}" 
+                                       placeholder="Silva" required>
+                                {% if form.last_name.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.last_name.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                <i class="fas fa-envelope me-1"></i>Email *
+                            </label>
+                            <input type="email" name="email" 
+                                   class="form-control{% if form.email.errors %} is-invalid{% endif %}" 
+                                   value="{{ form.email.value|default:'' }}" 
+                                   placeholder="seu.email@exemplo.com" required>
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Informações de Contato -->
+                        <h5 class="border-bottom pb-2 mb-3">
+                            <i class="fas fa-address-book me-2"></i>Informações de Contato
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                    <i class="fas fa-phone me-1"></i>Telefone
+                                </label>
+                                <input type="tel" name="phone" 
+                                       class="form-control{% if form.phone.errors %} is-invalid{% endif %}" 
+                                       value="{{ form.phone.value|default:'' }}" 
+                                       placeholder="(11) 99999-9999">
+                                {% if form.phone.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.phone.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Formato: (11) 99999-9999</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.birth_date.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calendar me-1"></i>Data de Nascimento
+                                </label>
+                                <input type="date" name="birth_date" 
+                                       class="form-control{% if form.birth_date.errors %} is-invalid{% endif %}" 
+                                       value="{{ form.birth_date.value|default:'' }}">
+                                {% if form.birth_date.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.birth_date.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="{{ form.city.id_for_label }}" class="form-label">
+                                    <i class="fas fa-map-marker-alt me-1"></i>Cidade
+                                </label>
+                                <input type="text" name="city" 
+                                       class="form-control{% if form.city.errors %} is-invalid{% endif %}" 
+                                       value="{{ form.city.value|default:'' }}" 
+                                       placeholder="São Paulo">
+                                {% if form.city.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.city.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.state.id_for_label }}" class="form-label">
+                                    <i class="fas fa-flag me-1"></i>Estado
+                                </label>
+                                <input type="text" name="state" 
+                                       class="form-control{% if form.state.errors %} is-invalid{% endif %}" 
+                                       value="{{ form.state.value|default:'' }}" 
+                                       placeholder="SP" maxlength="2">
+                                {% if form.state.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.state.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">Sigla (ex: SP, RJ)</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Foto de Perfil -->
+                        <h5 class="border-bottom pb-2 mb-3">
+                            <i class="fas fa-camera me-2"></i>Foto de Perfil
+                        </h5>
+                        
+                        {% if user.profile_picture %}
+                            <div class="mb-3">
+                                <label class="form-label">Foto Atual:</label>
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ user.profile_picture.url }}" 
+                                         class="rounded-circle me-3" 
+                                         width="64" height="64" 
+                                         alt="Foto atual">
+                                    <div>
+                                        <p class="mb-0 text-muted">Foto atual</p>
+                                        <small class="text-muted">Selecione uma nova foto para alterar</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.profile_picture.id_for_label }}" class="form-label">
+                                <i class="fas fa-upload me-1"></i>Nova Foto de Perfil
+                            </label>
+                            <input type="file" name="profile_picture" 
+                                   class="form-control{% if form.profile_picture.errors %} is-invalid{% endif %}" 
+                                   accept="image/*">
+                            {% if form.profile_picture.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.profile_picture.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Formatos aceitos: JPG, PNG. Tamanho máximo: 2MB
+                            </div>
+                        </div>
+                        
+                        <!-- Botões -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-control:focus {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 12px 24px;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #004499 0%, #0066cc 100%);
+    transform: translateY(-1px);
+}
+
+.card-header.bg-primary {
+    background-color: #0066cc !important;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #dc3545;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+@media (max-width: 768px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
