@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+{% block title %}Materiais - EEAR Prep{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="fw-bold">Materiais de Estudo</h1>
+            <p class="text-muted">Downloads, PDFs e recursos complementares para sua preparação</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Categoria</label>
+                            <select name="category" class="form-select">
+                                <option value="">Todas as Categorias</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" 
+                                            {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ category.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Matéria</label>
+                            <select name="subject" class="form-select">
+                                <option value="">Todas as Matérias</option>
+                                {% for subject in subjects %}
+                                    <option value="{{ subject.id }}" 
+                                            {% if request.GET.subject == subject.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ subject.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <label class="form-label">Tipo</label>
+                            <select name="type" class="form-select">
+                                <option value="">Todos os Tipos</option>
+                                <option value="pdf" {% if request.GET.type == 'pdf' %}selected{% endif %}>PDF</option>
+                                <option value="video" {% if request.GET.type == 'video' %}selected{% endif %}>Vídeo</option>
+                                <option value="doc" {% if request.GET.type == 'doc' %}selected{% endif %}>Documento</option>
+                                <option value="link" {% if request.GET.type == 'link' %}selected{% endif %}>Link</option>
+                                <option value="audio" {% if request.GET.type == 'audio' %}selected{% endif %}>Áudio</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Buscar</label>
+                            <input type="text" name="search" class="form-control" 
+                                   placeholder="Buscar materiais..." 
+                                   value="{{ search|default:'' }}">
+                        </div>
+                        
+                        <div class="col-md-1">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Materials Grid -->
+    <div class="row g-4">
+        {% for material in materials %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="material-icon {{ material.material_type }} me-3">
+                            {% if material.material_type == 'pdf' %}
+                                <i class="fas fa-file-pdf text-white"></i>
+                            {% elif material.material_type == 'video' %}
+                                <i class="fas fa-play text-white"></i>
+                            {% elif material.material_type == 'doc' %}
+                                <i class="fas fa-file-word text-white"></i>
+                            {% elif material.material_type == 'audio' %}
+                                <i class="fas fa-volume-up text-white"></i>
+                            {% elif material.material_type == 'link' %}
+                                <i class="fas fa-link text-white"></i>
+                            {% else %}
+                                <i class="fas fa-file text-white"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-1">{{ material.title }}</h6>
+                            <div class="d-flex gap-2 mb-2">
+                                <span class="badge bg-light text-dark">{{ material.subject.name }}</span>
+                                <span class="badge bg-info">{{ material.category.name }}</span>
+                                {% if material.is_premium %}
+                                    <span class="badge bg-warning">Premium</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="card-text text-muted small">{{ material.description|truncatewords:15 }}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <small class="text-muted">
+                            <i class="fas fa-download me-1"></i>
+                            {{ material.download_count }} downloads
+                        </small>
+                        
+                        {% if user.is_authenticated %}
+                            {% if material.is_premium and not user.is_premium %}
+                                <button class="btn btn-outline-warning btn-sm" disabled>
+                                    <i class="fas fa-lock me-1"></i>Premium
+                                </button>
+                            {% else %}
+                                <a href="{% url 'materials:download' material.id %}" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fas fa-download me-1"></i>Baixar
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'accounts:login' %}" 
+                               class="btn btn-outline-primary btn-sm">
+                                Fazer Login
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                <h5>Nenhum material encontrado</h5>
+                <p class="text-muted">Tente ajustar os filtros ou <a href="{% url 'materials:materials_list' %}">ver todos os materiais</a></p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if materials.has_other_pages %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <nav aria-label="Paginação de materiais">
+                <ul class="pagination justify-content-center">
+                    {% if materials.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ materials.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                                <i class="fas fa-chevron-left me-1"></i>Anterior
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in materials.paginator.page_range %}
+                        {% if materials.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > materials.number|add:'-3' and num < materials.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if materials.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ materials.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                                Próxima<i class="fas fa-chevron-right ms-1"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Upload Material (for staff) -->
+    {% if user.is_staff %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <h6 class="text-primary mb-3">Área Administrativa</h6>
+                    <a href="/admin/materials/material/add/" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Adicionar Material
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

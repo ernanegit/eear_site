@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from courses.models import Subject
 
 User = get_user_model()
 
@@ -28,7 +27,7 @@ class Material(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     category = models.ForeignKey(MaterialCategory, on_delete=models.CASCADE, related_name='materials')
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='materials')
+    subject = models.ForeignKey('courses.Subject', on_delete=models.CASCADE, related_name='materials')
     material_type = models.CharField(max_length=20, choices=MATERIAL_TYPES, default='pdf')
     file = models.FileField(upload_to='materials/', blank=True, null=True)
     external_url = models.URLField(blank=True)

@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.title }} - EEAR Prep{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Course Header -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Início</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'courses:courses_list' %}">Cursos</a></li>
+                    <li class="breadcrumb-item active">{{ course.title }}</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <span class="badge bg-primary me-2">{{ course.subject.name }}</span>
+                    <span class="badge bg-secondary me-2">{{ course.get_level_display }}</span>
+                    {% if course.is_premium %}
+                        <span class="badge bg-warning">Premium</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <h1 class="fw-bold mb-3">{{ course.title }}</h1>
+            <p class="lead text-muted">{{ course.description }}</p>
+            
+            <div class="d-flex gap-4 mb-4">
+                <div>
+                    <i class="fas fa-clock text-primary me-2"></i>
+                    <strong>{{ course.duration_hours }}</strong> horas
+                </div>
+                <div>
+                    <i class="fas fa-play-circle text-primary me-2"></i>
+                    <strong>{{ total_lessons }}</strong> aulas
+                </div>
+                <div>
+                    <i class="fas fa-certificate text-primary me-2"></i>
+                    <strong>{{ course.get_level_display }}</strong>
+                </div>
+            </div>
+            
+            {% if user.is_authenticated %}
+                <div class="progress mb-3">
+                    <div class="progress-bar" style="width: {{ progress_percentage }}%"></div>
+                </div>
+                <p class="small text-muted">
+                    Progresso: {{ completed_lessons }}/{{ total_lessons }} aulas concluídas ({{ progress_percentage|floatformat:0 }}%)
+                </p>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            {% if course.thumbnail %}
+                <img src="{{ course.thumbnail.url }}" class="img-fluid rounded shadow" alt="{{ course.title }}">
+            {% else %}
+                <div class="bg-primary rounded shadow d-flex align-items-center justify-content-center" style="min-height: 250px">
+                    <i class="fas fa-book fa-4x text-white"></i>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Course Content -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Conteúdo do Curso</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if lessons %}
+                        {% for lesson in lessons %}
+                        <div class="d-flex align-items-center p-3 border-bottom lesson-item">
+                            <div class="me-3">
+                                {% if lesson.lesson_type == 'video' %}
+                                    <i class="fas fa-play-circle fa-2x text-primary"></i>
+                                {% elif lesson.lesson_type == 'quiz' %}
+                                    <i class="fas fa-question-circle fa-2x text-warning"></i>
+                                {% elif lesson.lesson_type == 'text' %}
+                                    <i class="fas fa-file-text fa-2x text-info"></i>
+                                {% else %}
+                                    <i class="fas fa-tasks fa-2x text-success"></i>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ lesson.title }}</h6>
+                                {% if lesson.description %}
+                                    <p class="text-muted small mb-1">{{ lesson.description|truncatewords:15 }}</p>
+                                {% endif %}
+                                <div class="d-flex gap-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>{{ lesson.duration_minutes }} min
+                                    </small>
+                                    {% if lesson.is_free %}
+                                        <span class="badge bg-success">Grátis</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="ms-3">
+                                {% if has_access or lesson.is_free %}
+                                    <a href="{% url 'courses:lesson_detail' lesson.id %}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-play me-1"></i>Assistir
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-outline-secondary btn-sm" disabled>
+                                        <i class="fas fa-lock me-1"></i>Premium
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-video fa-3x text-muted mb-3"></i>
+                            <h6>Nenhuma aula disponível</h6>
+                            <p class="text-muted">O conteúdo será adicionado em breve.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            {% if not has_access and course.is_premium %}
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <i class="fas fa-crown fa-3x text-warning mb-3"></i>
+                        <h5>Conteúdo Premium</h5>
+                        <p class="text-muted">Este curso é exclusivo para assinantes premium.</p>
+                        <a href="{% url 'accounts:enrollment' %}" class="btn btn-warning">
+                            <i class="fas fa-crown me-2"></i>Assinar Premium
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if user.is_authenticated %}
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">Seu Progresso</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <div class="progress mb-3">
+                                <div class="progress-bar" style="width: {{ progress_percentage }}%"></div>
+                            </div>
+                            <h4 class="fw-bold text-primary">{{ progress_percentage|floatformat:0 }}%</h4>
+                            <p class="small text-muted">{{ completed_lessons }} de {{ total_lessons }} aulas concluídas</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

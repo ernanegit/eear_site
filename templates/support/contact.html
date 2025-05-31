@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Contato - EEAR Prep{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="fw-bold">Entre em Contato</h1>
+                <p class="lead text-muted">Estamos aqui para ajudar você em sua jornada de preparação</p>
+            </div>
+
+            <div class="row">
+                <!-- Contact Form -->
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow">
+                        <div class="card-body p-4">
+                            <h5 class="card-title mb-4">
+                                <i class="fas fa-envelope text-primary me-2"></i>
+                                Envie sua Mensagem
+                            </h5>
+                            
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Nome Completo</label>
+                                        {{ form.name }}
+                                        {% if form.name.errors %}
+                                            <div class="text-danger small">{{ form.name.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Email</label>
+                                        {{ form.email }}
+                                        {% if form.email.errors %}
+                                            <div class="text-danger small">{{ form.email.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Assunto</label>
+                                    {{ form.subject }}
+                                    {% if form.subject.errors %}
+                                        <div class="text-danger small">{{ form.subject.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Mensagem</label>
+                                    {{ form.message }}
+                                    {% if form.message.errors %}
+                                        <div class="text-danger small">{{ form.message.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i>Enviar Mensagem
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="col-lg-4">
+                    <div class="card bg-primary text-white border-0">
+                        <div class="card-body p-4">
+                            <h5 class="card-title">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Informações de Contato
+                            </h5>
+                            
+                            <div class="mb-4">
+                                <h6><i class="fas fa-clock me-2"></i>Horário de Atendimento</h6>
+                                <p class="mb-0">Segunda à Sexta: 8h às 18h</p>
+                                <p class="mb-0">Sábado: 8h às 12h</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h6><i class="fas fa-envelope me-2"></i>Email</h6>
+                                <p class="mb-0">contato@eearprep.com</p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h6><i class="fas fa-phone me-2"></i>Telefone</h6>
+                                <p class="mb-0">(11) 9999-9999</p>
+                            </div>
+                            
+                            <div>
+                                <h6><i class="fas fa-share-alt me-2"></i>Redes Sociais</h6>
+                                <div class="d-flex gap-3">
+                                    <a href="#" class="text-white">
+                                        <i class="fab fa-facebook-f fa-lg"></i>
+                                    </a>
+                                    <a href="#" class="text-white">
+                                        <i class="fab fa-instagram fa-lg"></i>
+                                    </a>
+                                    <a href="#" class="text-white">
+                                        <i class="fab fa-youtube fa-lg"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Links -->
+                    <div class="card mt-3 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h6 class="card-title">Links Úteis</h6>
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'support:faq' %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-question-circle me-2"></i>FAQ
+                                </a>
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'support:create_ticket' %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-ticket-alt me-2"></i>Abrir Ticket
+                                    </a>
+                                    <a href="{% url 'support:tickets' %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-list me-2"></i>Meus Tickets
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Help Section -->
+    <div class="row mt-5">
+        <div class="col-lg-10 mx-auto">
+            <div class="card bg-light">
+                <div class="card-body text-center py-4">
+                    <h5 class="mb-3">Outras formas de obter ajuda</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <i class="fas fa-question-circle fa-2x text-primary mb-2"></i>
+                            <h6>FAQ</h6>
+                            <p class="small text-muted">Consulte nossas perguntas frequentes</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-book fa-2x text-primary mb-2"></i>
+                            <h6>Documentação</h6>
+                            <p class="small text-muted">Guias e tutoriais completos</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                            <h6>Comunidade</h6>
+                            <p class="small text-muted">Interaja com outros estudantes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

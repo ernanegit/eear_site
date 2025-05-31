@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Cursos - EEAR Prep{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="fw-bold">Cursos Disponíveis</h1>
+            <p class="text-muted">Encontre o curso perfeito para sua preparação</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Matéria</label>
+                            <select name="subject" class="form-select">
+                                <option value="">Todas as Matérias</option>
+                                {% for subject in subjects %}
+                                    <option value="{{ subject.id }}" 
+                                            {% if request.GET.subject == subject.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ subject.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Nível</label>
+                            <select name="level" class="form-select">
+                                <option value="">Todos os Níveis</option>
+                                {% for level_code, level_name in level_choices %}
+                                    <option value="{{ level_code }}" 
+                                            {% if request.GET.level == level_code %}selected{% endif %}>
+                                        {{ level_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Buscar</label>
+                            <input type="text" name="search" class="form-control" 
+                                   placeholder="Buscar por título ou descrição..." 
+                                   value="{{ search|default:'' }}">
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-2"></i>Buscar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Courses Grid -->
+    <div class="row g-4">
+        {% for course in courses %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm">
+                {% if course.thumbnail %}
+                    <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.title }}" style="height: 200px; object-fit: cover">
+                {% else %}
+                    <div class="card-img-top bg-primary d-flex align-items-center justify-content-center" style="height: 200px">
+                        <i class="fas fa-book fa-3x text-white"></i>
+                    </div>
+                {% endif %}
+                
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-primary">{{ course.subject.name }}</span>
+                        <div>
+                            <span class="badge bg-secondary">{{ course.get_level_display }}</span>
+                            {% if course.is_premium %}
+                                <span class="badge bg-warning">Premium</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <h5 class="card-title">{{ course.title }}</h5>
+                    <p class="card-text text-muted flex-grow-1">{{ course.description|truncatewords:20 }}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            {{ course.duration_hours }}h
+                        </small>
+                        
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'courses:course_detail' course.id %}" 
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-play me-1"></i>Acessar
+                            </a>
+                        {% else %}
+                            <a href="{% url 'accounts:login' %}" 
+                               class="btn btn-outline-primary btn-sm">
+                                Fazer Login
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5>Nenhum curso encontrado</h5>
+                <p class="text-muted">Tente ajustar os filtros ou <a href="{% url 'courses:courses_list' %}">ver todos os cursos</a></p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if courses.has_other_pages %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <nav aria-label="Paginação de cursos">
+                <ul class="pagination justify-content-center">
+                    {% if courses.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ courses.previous_page_number }}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}{% if request.GET.level %}&level={{ request.GET.level }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                                <i class="fas fa-chevron-left me-1"></i>Anterior
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in courses.paginator.page_range %}
+                        {% if courses.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > courses.number|add:'-3' and num < courses.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}{% if request.GET.level %}&level={{ request.GET.level }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if courses.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ courses.next_page_number }}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}{% if request.GET.level %}&level={{ request.GET.level }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                                Próxima<i class="fas fa-chevron-right ms-1"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
