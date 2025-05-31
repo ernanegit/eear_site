@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Materiais - EEAR Prep{% endblock %}
 
@@ -23,7 +24,7 @@
                                 <option value="">Todas as Categorias</option>
                                 {% for category in categories %}
                                     <option value="{{ category.id }}" 
-                                            {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+                                            {% if selected_category == category.id %}selected{% endif %}>
                                         {{ category.name }}
                                     </option>
                                 {% endfor %}
@@ -36,7 +37,7 @@
                                 <option value="">Todas as Matérias</option>
                                 {% for subject in subjects %}
                                     <option value="{{ subject.id }}" 
-                                            {% if request.GET.subject == subject.id|stringformat:"s" %}selected{% endif %}>
+                                            {% if selected_subject == subject.id %}selected{% endif %}>
                                         {{ subject.name }}
                                     </option>
                                 {% endfor %}
@@ -47,11 +48,12 @@
                             <label class="form-label">Tipo</label>
                             <select name="type" class="form-select">
                                 <option value="">Todos os Tipos</option>
-                                <option value="pdf" {% if request.GET.type == 'pdf' %}selected{% endif %}>PDF</option>
-                                <option value="video" {% if request.GET.type == 'video' %}selected{% endif %}>Vídeo</option>
-                                <option value="doc" {% if request.GET.type == 'doc' %}selected{% endif %}>Documento</option>
-                                <option value="link" {% if request.GET.type == 'link' %}selected{% endif %}>Link</option>
-                                <option value="audio" {% if request.GET.type == 'audio' %}selected{% endif %}>Áudio</option>
+                                <option value="pdf" {% if selected_type == 'pdf' %}selected{% endif %}>PDF</option>
+                                <option value="video" {% if selected_type == 'video' %}selected{% endif %}>Vídeo</option>
+                                <option value="doc" {% if selected_type == 'doc' %}selected{% endif %}>Documento</option>
+                                <option value="link" {% if selected_type == 'link' %}selected{% endif %}>Link</option>
+                                <option value="audio" {% if selected_type == 'audio' %}selected{% endif %}>Áudio</option>
+                                <option value="image" {% if selected_type == 'image' %}selected{% endif %}>Imagem</option>
                             </select>
                         </div>
                         
@@ -92,6 +94,8 @@
                                 <i class="fas fa-volume-up text-white"></i>
                             {% elif material.material_type == 'link' %}
                                 <i class="fas fa-link text-white"></i>
+                            {% elif material.material_type == 'image' %}
+                                <i class="fas fa-image text-white"></i>
                             {% else %}
                                 <i class="fas fa-file text-white"></i>
                             {% endif %}
@@ -118,18 +122,33 @@
                         
                         {% if user.is_authenticated %}
                             {% if material.is_premium and not user.is_premium %}
-                                <button class="btn btn-outline-warning btn-sm" disabled>
+                                <button class="btn btn-outline-warning btn-sm" disabled 
+                                        title="Conteúdo exclusivo para assinantes premium">
                                     <i class="fas fa-lock me-1"></i>Premium
                                 </button>
                             {% else %}
-                                <a href="{% url 'materials:download' material.id %}" 
-                                   class="btn btn-primary btn-sm">
-                                    <i class="fas fa-download me-1"></i>Baixar
-                                </a>
+                                <!-- Verificar se material tem arquivo ou URL -->
+                                {% if material.file or material.external_url %}
+                                    <a href="{% url 'materials:download' material.id %}" 
+                                       class="btn btn-primary btn-sm"
+                                       title="Baixar {{ material.get_material_type_display }}">
+                                        {% if material.material_type == 'link' %}
+                                            <i class="fas fa-external-link-alt me-1"></i>Abrir
+                                        {% else %}
+                                            <i class="fas fa-download me-1"></i>Baixar
+                                        {% endif %}
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-outline-secondary btn-sm" disabled
+                                            title="Material ainda não disponível">
+                                        <i class="fas fa-exclamation-circle me-1"></i>Indisponível
+                                    </button>
+                                {% endif %}
                             {% endif %}
                         {% else %}
-                            <a href="{% url 'accounts:login' %}" 
-                               class="btn btn-outline-primary btn-sm">
+                            <a href="{% url 'accounts:login' %}?next={% url 'materials:download' material.id %}" 
+                               class="btn btn-outline-primary btn-sm"
+                               title="Faça login para baixar">
                                 Fazer Login
                             </a>
                         {% endif %}
@@ -142,7 +161,18 @@
             <div class="text-center py-5">
                 <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
                 <h5>Nenhum material encontrado</h5>
-                <p class="text-muted">Tente ajustar os filtros ou <a href="{% url 'materials:materials_list' %}">ver todos os materiais</a></p>
+                {% if search or selected_category or selected_subject or selected_type %}
+                    <p class="text-muted">
+                        Tente ajustar os filtros ou 
+                        <a href="{% url 'materials:materials_list' %}" class="text-decoration-none">
+                            ver todos os materiais
+                        </a>
+                    </p>
+                {% else %}
+                    <p class="text-muted">
+                        Os materiais de estudo serão disponibilizados em breve.
+                    </p>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -156,7 +186,7 @@
                 <ul class="pagination justify-content-center">
                     {% if materials.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ materials.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                            <a class="page-link" href="?page={{ materials.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
                                 <i class="fas fa-chevron-left me-1"></i>Anterior
                             </a>
                         </li>
@@ -169,14 +199,14 @@
                             </li>
                         {% elif num > materials.number|add:'-3' and num < materials.number|add:'3' %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ num }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                                <a class="page-link" href="?page={{ num }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search %}&search={{ search }}{% endif %}">{{ num }}</a>
                             </li>
                         {% endif %}
                     {% endfor %}
                     
                     {% if materials.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?page={{ materials.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.subject %}&subject={{ request.GET.subject }}{% endif %}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                            <a class="page-link" href="?page={{ materials.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_subject %}&subject={{ selected_subject }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if search %}&search={{ search }}{% endif %}">
                                 Próxima<i class="fas fa-chevron-right ms-1"></i>
                             </a>
                         </li>
@@ -193,14 +223,155 @@
         <div class="col-12">
             <div class="card border-primary">
                 <div class="card-body text-center">
-                    <h6 class="text-primary mb-3">Área Administrativa</h6>
-                    <a href="/admin/materials/material/add/" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Adicionar Material
-                    </a>
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-cog me-2"></i>Área Administrativa
+                    </h6>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <a href="/admin/materials/material/add/" class="btn btn-primary btn-sm" target="_blank">
+                            <i class="fas fa-plus me-2"></i>Adicionar Material
+                        </a>
+                        <a href="/admin/materials/material/" class="btn btn-outline-primary btn-sm" target="_blank">
+                            <i class="fas fa-list me-2"></i>Gerenciar Materiais
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Help Section -->
+    {% if not materials and not search %}
+    <div class="row mt-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h6><i class="fas fa-info-circle me-2"></i>Como funciona?</h6>
+                    <p class="text-muted mb-3">
+                        Aqui você encontrará materiais complementares como PDFs, vídeos, 
+                        exercícios e links úteis para sua preparação.
+                    </p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                            <p class="small"><strong>PDFs</strong><br>Apostilas e resumos</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-play fa-2x text-success mb-2"></i>
+                            <p class="small"><strong>Vídeos</strong><br>Aulas complementares</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-link fa-2x text-info mb-2"></i>
+                            <p class="small"><strong>Links</strong><br>Recursos externos</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     {% endif %}
 </div>
+
+<style>
+.material-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.material-icon.pdf { background-color: #dc3545; }
+.material-icon.doc { background-color: #0066cc; }
+.material-icon.video { background-color: #28a745; }
+.material-icon.audio { background-color: #ffc107; }
+.material-icon.link { background-color: #6c757d; }
+.material-icon.image { background-color: #17a2b8; }
+
+.card {
+    border-radius: 12px;
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #004499 0%, #0066cc 100%);
+    transform: translateY(-1px);
+}
+
+.form-control, .form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.15);
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.text-primary {
+    color: #0066cc !important;
+}
+
+/* Tooltip melhorado */
+[title] {
+    position: relative;
+}
+
+/* Loading state para botões */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+</style>
+
+{% block extra_js %}
+<!-- Incluir o gerenciador de downloads -->
+<script src="{% static 'js/download-manager.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Melhorar UX dos filtros
+    const filters = document.querySelectorAll('select[name], input[name="search"]');
+    filters.forEach(filter => {
+        filter.addEventListener('change', function() {
+            if (this.name !== 'search') {
+                // Auto-submit para selects
+                this.form.submit();
+            }
+        });
+    });
+    
+    // Debounce para campo de busca
+    const searchInput = document.querySelector('input[name="search"]');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.form.submit();
+            }, 500);
+        });
+    }
+});
+</script>
+{% endblock %}
 {% endblock %}
